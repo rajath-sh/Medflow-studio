@@ -1,0 +1,353 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": [
+        "workflow_name",
+        "nodes",
+        "edges"
+    ],
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "workflow_name": {
+            "type": "string"
+        },
+        "version": {
+            "type": "string"
+        },
+        "tenant_id": {
+            "type": "string"
+        },
+        "created_by": {
+            "type": "string"
+        },
+        "metadata": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "nodes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "type",
+                    "config"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "data_source",
+                            "transform",
+                            "destination",
+                            "api_endpoint",
+                            "trigger"
+                        ]
+                    },
+                    "config": {
+                        "type": "object",
+                        "anyOf": [
+                            {
+                                "title": "Trigger",
+                                "properties": {
+                                    "trigger_type": {
+                                        "enum": [
+                                            "manual",
+                                            "scheduled",
+                                            "event"
+                                        ]
+                                    },
+                                    "cron": {
+                                        "type": "string"
+                                    },
+                                    "event_name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "trigger_type"
+                                ]
+                            },
+                            {
+                                "title": "Data Source",
+                                "properties": {
+                                    "source_type": {
+                                        "enum": [
+                                            "csv",
+                                            "database",
+                                            "external_api"
+                                        ]
+                                    },
+                                    "path": {
+                                        "type": "string"
+                                    },
+                                    "connection_string": {
+                                        "type": "string"
+                                    },
+                                    "query": {
+                                        "type": "string"
+                                    },
+                                    "endpoint": {
+                                        "type": "string"
+                                    },
+                                    "method": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "source_type"
+                                ]
+                            },
+                            {
+                                "title": "Transform",
+                                "properties": {
+                                    "operations": {
+                                        "type": "array",
+                                        "items": {
+                                            "oneOf": [
+                                                {
+                                                    "title": "Filter Operation",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "type",
+                                                        "field",
+                                                        "operator",
+                                                        "value"
+                                                    ],
+                                                    "properties": {
+                                                        "type": {
+                                                            "const": "filter"
+                                                        },
+                                                        "field": {
+                                                            "type": "string"
+                                                        },
+                                                        "operator": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                ">",
+                                                                "<",
+                                                                "==",
+                                                                "!=",
+                                                                ">=",
+                                                                "<="
+                                                            ]
+                                                        },
+                                                        "value": {}
+                                                    }
+                                                },
+                                                {
+                                                    "title": "Rename Operation",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "type",
+                                                        "from",
+                                                        "to"
+                                                    ],
+                                                    "properties": {
+                                                        "type": {
+                                                            "const": "rename"
+                                                        },
+                                                        "from": {
+                                                            "type": "string"
+                                                        },
+                                                        "to": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "title": "Select Operation",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "type",
+                                                        "columns"
+                                                    ],
+                                                    "properties": {
+                                                        "type": {
+                                                            "const": "select"
+                                                        },
+                                                        "columns": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "title": "Map Operation",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "type",
+                                                        "field",
+                                                        "expression"
+                                                    ],
+                                                    "properties": {
+                                                        "type": {
+                                                            "const": "map"
+                                                        },
+                                                        "field": {
+                                                            "type": "string"
+                                                        },
+                                                        "expression": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "title": "Dedup Operation",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "type",
+                                                        "subset"
+                                                    ],
+                                                    "properties": {
+                                                        "type": {
+                                                            "const": "dedup"
+                                                        },
+                                                        "subset": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "title": "Custom AI Operation",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "type",
+                                                        "prompt"
+                                                    ],
+                                                    "properties": {
+                                                        "type": {
+                                                            "const": "ai_custom"
+                                                        },
+                                                        "prompt": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "title": "Unit Conversion",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "type",
+                                                        "field",
+                                                        "from_unit",
+                                                        "to_unit"
+                                                    ],
+                                                    "properties": {
+                                                        "type": {
+                                                            "const": "convert_unit"
+                                                        },
+                                                        "field": {
+                                                            "type": "string"
+                                                        },
+                                                        "from_unit": {
+                                                            "type": "string"
+                                                        },
+                                                        "to_unit": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "operations"
+                                ]
+                            },
+                            {
+                                "title": "Destination",
+                                "properties": {
+                                    "destination_type": {
+                                        "enum": [
+                                            "database",
+                                            "csv_export",
+                                            "api_exposure",
+                                            "file_storage"
+                                        ]
+                                    },
+                                    "table": {
+                                        "type": "string"
+                                    },
+                                    "path": {
+                                        "type": "string"
+                                    },
+                                    "schema": {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "destination_type"
+                                ]
+                            },
+                            {
+                                "title": "API Endpoint",
+                                "properties": {
+                                    "route": {
+                                        "type": "string"
+                                    },
+                                    "method": {
+                                        "enum": [
+                                            "GET",
+                                            "POST",
+                                            "PUT",
+                                            "DELETE"
+                                        ]
+                                    },
+                                    "input_schema": {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "output_schema": {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "route",
+                                    "method"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "edges": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "from",
+                    "to"
+                ],
+                "properties": {
+                    "from": {
+                        "type": "string"
+                    },
+                    "to": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

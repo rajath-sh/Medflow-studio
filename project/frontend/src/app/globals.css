@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* Optional global styles */
+html,
+body,
+#__next {
+  height: 100%;
+}
+
+body {
+  background-color: #f3f4f6;
+  color: #111827;
+}

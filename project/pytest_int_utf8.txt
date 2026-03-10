@@ -1,0 +1,19 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.12.4, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\rajat\Desktop\EL_projects\WIC h\medflow-studio\venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\rajat\Desktop\EL_projects\WIC h\medflow-studio\generated_project
+plugins: anyio-4.12.0
+collecting ... collected 4 items
+
+app/tests/integration/test_api_security.py::test_health_check_endpoint PASSED [ 25%]
+app/tests/integration/test_api_security.py::test_protected_routes_require_auth PASSED [ 50%]
+app/tests/integration/test_api_security.py::test_protected_workflow_require_auth PASSED [ 75%]
+app/tests/integration/test_api_security.py::test_login_invalid_credentials PASSED [100%]
+
+============================== warnings summary ===============================
+app\db_models.py:443
+  C:\Users\rajat\Desktop\EL_projects\WIC h\medflow-studio\generated_project\app\db_models.py:443: SAWarning: This declarative base already contains a class with the same class name and module name as app.db_models.AuditLog, and will be replaced in the string-lookup table.
+    class AuditLog(Base):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 4 passed, 1 warning in 3.02s =========================

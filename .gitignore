@@ -1,0 +1,44 @@
+# HealthOps Studio — Git Ignore Rules
+# Keep the repository clean: only source code, no generated artifacts.
+
+# ── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── Virtual Environment ──────────────────────────────────
+venv/
+.venv/
+env/
+
+# ── Environment & Secrets ────────────────────────────────
+# .env contains real secrets — NEVER commit it.
+# .env.template is committed as a reference for other developers.
+.env
+*.pem
+
+# ── Database ──────────────────────────────────────────────
+*.db
+*.sqlite3
+
+# ── IDE ───────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── OS ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Docker ────────────────────────────────────────────────
+# Docker volumes are managed by Docker, not git
+pgdata/
+
+# ── Node.js (frontend) ───────────────────────────────────
+node_modules/
+.next/

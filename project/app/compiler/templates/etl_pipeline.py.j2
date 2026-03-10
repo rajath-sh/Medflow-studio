@@ -1,0 +1,42 @@
+import pandas as pd
+import json
+
+def run_etl_pipeline():
+    print("Starting ETL Pipeline: {{ workflow_name }}")
+    
+{% for node in nodes %}
+    # --- Node: {{ node.id }} (Type: {{ node.type }}) ---
+{% if node.type == 'data_source' %}
+{% if node.config.source_type == 'csv' %}
+    print("Extracting from CSV: {{ node.config.path }}")
+    df_{{ node.id }} = pd.read_csv("{{ node.config.path }}")
+{% elif node.config.source_type == 'database' %}
+    print("Extracting from Database...")
+    # Add DB connection logic here
+{% endif %}
+{% elif node.type == 'transform' %}
+    print("Applying transformations...")
+    # Pass data through transforms
+    {% for op in node.config.operations %}
+    # Op: {{ op.type }}
+    {% if op.type == 'rename' %}
+    df_{{ node.id }} = df_{{ node.id }}.rename(columns={"{{ op.from }}": "{{ op.to }}"})
+    {% elif op.type == 'select' %}
+    df_{{ node.id }} = df_{{ node.id }}[{{ op.columns }}]
+    {% endif %}
+    {% endfor %}
+{% elif node.type == 'destination' %}
+{% if node.config.destination_type == 'database' %}
+    print("Loading to database table: {{ node.config.table }}")
+    # Add DB load logic here
+{% elif node.config.destination_type == 'csv_export' %}
+    print("Exporting to CSV: {{ node.config.path }}")
+    df_{{ node.id }}.to_csv("{{ node.config.path }}", index=False)
+{% endif %}
+{% endif %}
+
+{% endfor %}
+    print("ETL Pipeline completed.")
+
+if __name__ == "__main__":
+    run_etl_pipeline()

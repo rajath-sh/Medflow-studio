@@ -1,0 +1,17 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.12.4, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\rajat\Desktop\EL_projects\WIC h\medflow-studio\venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\rajat\Desktop\EL_projects\WIC h\medflow-studio\generated_project
+plugins: anyio-4.12.0
+collecting ... collected 8 items
+
+app/tests/unit/test_ai_schemas.py::test_generated_node_validation PASSED [ 12%]
+app/tests/unit/test_ai_schemas.py::test_generated_edge_validation PASSED [ 25%]
+app/tests/unit/test_ai_schemas.py::test_workflow_result_schema PASSED    [ 37%]
+app/tests/unit/test_classifier.py::test_classifier_etl_pipeline PASSED   [ 50%]
+app/tests/unit/test_classifier.py::test_classifier_api_service PASSED    [ 62%]
+app/tests/unit/test_classifier.py::test_classifier_hybrid PASSED         [ 75%]
+app/tests/unit/test_security.py::test_password_hashing PASSED            [ 87%]
+app/tests/unit/test_security.py::test_access_token_creation_and_decoding PASSED [100%]
+
+============================== 8 passed in 7.91s ==============================

@@ -1,0 +1,80 @@
+{
+    "id": "wf_12345",
+    "workflow_name": "Healthcare ETL Pipeline",
+    "version": "1.0",
+    "tenant_id": "tenant_001",
+    "created_by": "user_admin",
+    "metadata": {
+        "description": "Extracts patient records, normalizes units, maps fields, and loads to database."
+    },
+    "nodes": [
+        {
+            "id": "trigger_node",
+            "type": "trigger",
+            "config": {
+                "trigger_type": "scheduled",
+                "cron": "0 0 * * *"
+            }
+        },
+        {
+            "id": "source_csv",
+            "type": "data_source",
+            "config": {
+                "source_type": "csv",
+                "path": "data/incoming/patients_daily.csv"
+            }
+        },
+        {
+            "id": "transform_patient",
+            "type": "transform",
+            "config": {
+                "operations": [
+                    {
+                        "type": "convert_unit",
+                        "field": "height",
+                        "from_unit": "inches",
+                        "to_unit": "cm"
+                    },
+                    {
+                        "type": "rename",
+                        "from": "height",
+                        "to": "height_cm"
+                    },
+                    {
+                        "type": "dedup",
+                        "subset": [
+                            "patient_id"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "dest_db",
+            "type": "destination",
+            "config": {
+                "destination_type": "database",
+                "table": "patient_records",
+                "schema": {
+                    "patient_id": "string",
+                    "name": "string",
+                    "height_cm": "float"
+                }
+            }
+        }
+    ],
+    "edges": [
+        {
+            "from": "trigger_node",
+            "to": "source_csv"
+        },
+        {
+            "from": "source_csv",
+            "to": "transform_patient"
+        },
+        {
+            "from": "transform_patient",
+            "to": "dest_db"
+        }
+    ]
+}

@@ -1,0 +1,20 @@
+from fastapi import FastAPI, HTTPException
+from .models import *
+
+app = FastAPI(title="{{ workflow_name }} API")
+
+@app.get('/health', tags=["System"])
+def health():
+    return {'status': 'ok'}
+
+{% for endpoint in endpoints %}
+@app.{{ endpoint.method | lower }}('{{ endpoint.route }}', tags=["API Endpoint"])
+def {{ endpoint.name }}({% if endpoint.input_model %}data: {{ endpoint.input_model }}{% endif %}):
+    # TODO: Connect to backend logic / workflow
+    {% if endpoint.output_model %}
+    return {{ endpoint.output_model }}() # Placeholder
+    {% else %}
+    return {"status": "success"}
+    {% endif %}
+
+{% endfor %}

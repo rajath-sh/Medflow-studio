@@ -1,0 +1,47 @@
+# HealthOps Studio — Local Development Stack
+# PostgreSQL + Redis for the platform backend
+#
+# WHY DOCKER?
+# Instead of installing PostgreSQL/Redis on your machine,
+# Docker gives us isolated, reproducible services that match production.
+# In an interview: "We use Docker Compose for local dev parity with production."
+
+services:
+  # ── PostgreSQL ──────────────────────────────────────────
+  # Our primary database. Using v16 (latest stable).
+  # Data is persisted in a named volume so it survives container restarts.
+  db:
+    image: postgres:16-alpine
+    container_name: healthops-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: healthops
+      POSTGRES_PASSWORD: healthops_dev_2024
+      POSTGRES_DB: healthops
+    ports:
+      - "5433:5432" # 5433 on host → 5432 in container (avoids conflict with local PG)
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U healthops" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Redis ───────────────────────────────────────────────
+  # Used for: Celery task broker, rate limiting, token blacklist.
+  # We set it up now so it's ready for Phase 2 (Celery jobs).
+  redis:
+    image: redis:7-alpine
+    container_name: healthops-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:

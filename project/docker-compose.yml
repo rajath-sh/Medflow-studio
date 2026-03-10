@@ -1,0 +1,120 @@
+# ------------------------------------------------------------------------------
+# HealthOps Studio - Production Docker Compose
+# ------------------------------------------------------------------------------
+# Usage:
+#   docker-compose build
+#   docker-compose up -d
+
+services:
+  # ----------------------------------------
+  # PostgreSQL Database
+  # ----------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: healthops_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-healthops}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-healthops_secure_pass_2024}
+      POSTGRES_DB: ${POSTGRES_DB:-healthops_studio}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-healthops}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------
+  # Redis (Cache, Rate Limiting, Celery Broker)
+  # ----------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: healthops_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------
+  # FastAPI Backend (API Server)
+  # ----------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: healthops_backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      # Automatically construct DB URL based on docker network
+      DATABASE_URL: postgresql://${POSTGRES_USER:-healthops}:${POSTGRES_PASSWORD:-healthops_secure_pass_2024}@db:5432/${POSTGRES_DB:-healthops_studio}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      # Note: GEMINI_API_KEY should be passed at runtime via .env file or shell
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-""}
+      CORS_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000"
+    # Command creates tables (via run logic) and starts the server
+    command: >
+      sh -c "python -m app.seed || true && \
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  # ----------------------------------------
+  # Celery Worker (Background Jobs)
+  # ----------------------------------------
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: healthops_worker
+    restart: always
+    volumes:
+      - .:/app
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-healthops}:${POSTGRES_PASSWORD:-healthops_secure_pass_2024}@db:5432/${POSTGRES_DB:-healthops_studio}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-""}
+    command: celery -A app.celery_app worker --loglevel=info -E
+
+  # ----------------------------------------
+  # Next.js Frontend
+  # ----------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: healthops_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      # Tell the frontend where the backend is located OUTSIDE the container context
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+
+volumes:
+  postgres_data:
+  redis_data:

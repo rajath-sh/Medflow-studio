@@ -1,0 +1,56 @@
+{
+    "id": "wf_simple_01",
+    "workflow_name": "basic_patient_etl",
+    "version": "1.0",
+    "tenant_id": "tenant_001",
+    "created_by": "user_admin",
+    "nodes": [
+        {
+            "id": "source_1",
+            "type": "data_source",
+            "config": {
+                "source_type": "csv",
+                "path": "patients.csv"
+            }
+        },
+        {
+            "id": "transform_1",
+            "type": "transform",
+            "config": {
+                "operations": [
+                    {
+                        "type": "filter",
+                        "field": "age",
+                        "operator": ">",
+                        "value": 0
+                    }
+                ]
+            }
+        },
+        {
+            "id": "destination_1",
+            "type": "destination",
+            "config": {
+                "destination_type": "database",
+                "table": "patients_clean",
+                "schema": {
+                    "patient_id": "str",
+                    "name": "str",
+                    "age": "int",
+                    "gender": "str?",
+                    "height_cm": "float?"
+                }
+            }
+        }
+    ],
+    "edges": [
+        {
+            "from": "source_1",
+            "to": "transform_1"
+        },
+        {
+            "from": "transform_1",
+            "to": "destination_1"
+        }
+    ]
+}
